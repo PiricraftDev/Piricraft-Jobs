@@ -6,11 +6,11 @@ public final class PiricraftJobs extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
+        getLogger().info("Piricraft-Jobs has started !");
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        getLogger().info("Piricraft-Jobs has stopped !");
     }
 }
