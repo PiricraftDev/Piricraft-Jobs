@@ -8,7 +8,6 @@ import fr.piricraft.piricraftJobs.models.JobReward;
 import fr.piricraft.piricraftJobs.models.JobType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
@@ -20,6 +19,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ public class JobsManager {
     private final Map<JobType, Map<EntityType, JobReward>> mobRewards = new EnumMap<>(JobType.class);
 
     private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
-    private final Map<UUID, Integer> bossBarTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, BukkitTask> hideTasks = new ConcurrentHashMap<>();
 
     public JobsManager(PiricraftJobs plugin, JobsDatabaseManager dbManager) {
         this.plugin = plugin;
@@ -148,7 +148,7 @@ public class JobsManager {
         ));
 
         if (profile.isShowBossBar()) {
-            updateBossBar(player, profile, job);
+            showTemporaryBossBar(player, profile, job, 3);
         }
 
         if (levelUp) {
@@ -163,8 +163,14 @@ public class JobsManager {
         }
     }
 
-    private void updateBossBar(Player player, JobProfile profile, JobType job) {
+    public void showTemporaryBossBar(Player player, JobProfile profile, JobType job, int displaySeconds) {
         UUID uuid = player.getUniqueId();
+
+        if (!profile.isShowBossBar() || job == null) {
+            removeBossBar(player);
+            return;
+        }
+
         int level = profile.getLevel(job);
         double currentXp = profile.getExperience(job);
         double reqXp = getRequiredExperience(level);
@@ -186,25 +192,35 @@ public class JobsManager {
         bossBar.name(title);
         bossBar.progress(progress);
 
-        if (bossBarTasks.containsKey(uuid)) {
-            Bukkit.getScheduler().cancelTask(bossBarTasks.get(uuid));
+        BukkitTask existingTask = hideTasks.remove(uuid);
+        if (existingTask != null) {
+            existingTask.cancel();
         }
 
-        int taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            BossBar bar = activeBossBars.remove(uuid);
-            if (bar != null) {
-                player.hideBossBar(bar);
-            }
-            bossBarTasks.remove(uuid);
-        }, 60L);
+        BukkitTask newTask = plugin.getServer().getScheduler().runTaskLater(plugin, () -> removeBossBar(player), displaySeconds * 20L);
+        hideTasks.put(uuid, newTask);
+    }
 
-        bossBarTasks.put(uuid, taskId);
+    public void removeBossBar(Player player) {
+        UUID uuid = player.getUniqueId();
+
+        BukkitTask task = hideTasks.remove(uuid);
+        if (task != null) {
+            task.cancel();
+        }
+
+        BossBar bar = activeBossBars.remove(uuid);
+        if (bar != null) {
+            player.hideBossBar(bar);
+        }
     }
 
     private void spawnHarmlessFirework(Location loc) {
         if (loc.getWorld() == null) return;
 
-        Firework fw = loc.getWorld().spawn(loc, Firework.class);
+        Location safeLoc = loc.clone().add(2.0, 2.5, 0.0);
+
+        Firework fw = safeLoc.getWorld().spawn(safeLoc, Firework.class);
         FireworkMeta meta = fw.getFireworkMeta();
 
         FireworkEffect effect = FireworkEffect.builder()
@@ -219,6 +235,6 @@ public class JobsManager {
         meta.setPower(0);
         fw.setFireworkMeta(meta);
 
-        Bukkit.getScheduler().runTaskLater(plugin, fw::detonate, 1L);
+        plugin.getServer().getScheduler().runTaskLater(plugin, fw::detonate, 1L);
     }
 }

@@ -5,6 +5,7 @@ import fr.piricraft.piricraftJobs.gui.JobsMainMenu;
 import fr.piricraft.piricraftJobs.managers.JobsDatabaseManager;
 import fr.piricraft.piricraftJobs.managers.JobsManager;
 import fr.piricraft.piricraftJobs.models.JobProfile;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -48,6 +49,7 @@ public class JobsCommand implements CommandExecutor, TabCompleter {
                 player.sendMessage(TextUtils.color("<green>[Métier]</green> La barre de progression est maintenant <bold>activée</bold>."));
             } else {
                 player.sendMessage(TextUtils.color("<red>[Métier]</red> La barre de progression est maintenant <bold>désactivée</bold>."));
+
             }
             return true;
         }
