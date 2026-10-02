@@ -1,5 +1,6 @@
 package fr.piricraft.piricraftJobs;
 
+import fr.piricraft.piricraftJobs.commands.JobsCommand;
 import fr.piricraft.piricraftJobs.listeners.JobsConnectionListener;
 import fr.piricraft.piricraftJobs.listeners.JobsFarmListener;
 import fr.piricraft.piricraftJobs.managers.JobsDatabaseManager;
@@ -27,6 +28,10 @@ public final class PiricraftJobs extends JavaPlugin {
         }
 
         this.jobsManager = new JobsManager(this, databaseManager);
+
+        if (getCommand("jobs") != null) {
+            getCommand("jobs").setExecutor(new JobsCommand(jobsManager, databaseManager));
+        }
 
         getServer().getPluginManager().registerEvents(new JobsFarmListener(this, jobsManager), this);
         getServer().getPluginManager().registerEvents(new JobsConnectionListener(this), this);

@@ -9,3 +9,7 @@ depend: [PiricraftCore]
 
 authors: [ Lepipassier ]
 website: https://github.com/PiricraftDev/Piricraft-Jobs
+
+commands:
+  jobs:
+    description: Ouvre le menu des jobs.
