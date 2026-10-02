@@ -15,7 +15,9 @@ public final class PiricraftJobs extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
+        if (getResource("config.yml") != null) {
+            saveDefaultConfig();
+        }
 
         this.databaseManager = new JobsDatabaseManager(this);
         if (!this.databaseManager.initDatabase()) {
