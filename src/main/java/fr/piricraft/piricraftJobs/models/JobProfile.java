@@ -3,23 +3,20 @@ package fr.piricraft.piricraftJobs.models;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 public class JobProfile {
 
     private final UUID playerUuid;
-    private final Map<JobType, Integer> jobLevels;
-    private final Map<JobType, Double> jobExperience;
     private JobType activeJob;
+    private final Map<JobType, Integer> levels = new EnumMap<>(JobType.class);
+    private final Map<JobType, Double> experience = new EnumMap<>(JobType.class);
 
     public JobProfile(UUID playerUuid) {
         this.playerUuid = playerUuid;
-        this.jobLevels = new EnumMap<>(JobType.class);
-        this.jobExperience = new EnumMap<>(JobType.class);
-        this.activeJob = null;
-
         for (JobType job : JobType.values()) {
-            this.jobLevels.put(job, 1);
-            this.jobExperience.put(job, 0.0);
+            levels.put(job, 1);
+            experience.put(job, 0.0);
         }
     }
 
@@ -35,33 +32,31 @@ public class JobProfile {
         this.activeJob = activeJob;
     }
 
-    public int getLevel(JobType jobType) {
-        return jobLevels.getOrDefault(jobType, 1);
+    public int getLevel(JobType job) {
+        return levels.getOrDefault(job, 1);
     }
 
-    public double getExperience(JobType jobType) {
-        return jobExperience.getOrDefault(jobType, 0.0);
+    public double getExperience(JobType job) {
+        return experience.getOrDefault(job, 0.0);
     }
 
-    public void setLevel(JobType jobType, int level) {
-            jobLevels.put(jobType, level);
-    }
+    public boolean addExperience(JobType job, double amount, Function<Integer, Double> reqExpCalculator) {
+        double currentXp = getExperience(job) + amount;
+        int currentLevel = getLevel(job);
+        boolean leveledUp = false;
 
-    public void setExperience(JobType jobType, double experience) {
-        jobExperience.put(jobType, experience);
-    }
+        double requiredXp = reqExpCalculator.apply(currentLevel);
 
-    public boolean addExperience(JobType jobType, double amount, double expRequiredForNextLevel) {
-        double currentExp = getExperience(jobType) + amount;
-
-        if (currentExp >= expRequiredForNextLevel) {
-            int currentLevel = getLevel(jobType);
-            this.jobLevels.put(jobType, currentLevel + 1);
-            this.jobExperience.put(jobType, currentExp - expRequiredForNextLevel);
-            return true;
+        while (currentXp >= requiredXp) {
+            currentXp -= requiredXp;
+            currentLevel++;
+            leveledUp = true;
+            requiredXp = reqExpCalculator.apply(currentLevel);
         }
 
-        this.jobExperience.put(jobType, currentExp);
-        return false;
+        experience.put(job, currentXp);
+        levels.put(job, currentLevel);
+
+        return leveledUp;
     }
 }
