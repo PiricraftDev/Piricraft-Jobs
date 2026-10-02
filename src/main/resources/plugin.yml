@@ -1,0 +1,11 @@
+name: PiricraftJobs
+description: $description
+version: '${version}'
+
+main: fr.piricraft.piricraftJobs.PiricraftJobs
+api-version: '26.2'
+load: POSTWORLD
+depend: [PiricraftCore-1.0]
+
+authors: [ Lepipassier ]
+website: https://github.com/Piricraft
