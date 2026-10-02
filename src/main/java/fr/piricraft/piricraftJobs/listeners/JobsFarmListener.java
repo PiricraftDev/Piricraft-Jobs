@@ -36,19 +36,18 @@ public class JobsFarmListener implements Listener {
         Block block = event.getBlock();
         Player player = event.getPlayer();
 
-        if (block.hasMetadata(PLACED_KEY)) {
+        boolean placedByPlayer = block.hasMetadata(PLACED_KEY);
+        if (placedByPlayer) {
             block.removeMetadata(PLACED_KEY, plugin);
-            return;
         }
 
         BlockData blockData = block.getBlockData();
-        if (blockData instanceof Ageable ageable) {
-            if (ageable.getAge() < ageable.getMaximumAge()) {
-                return;
-            }
+        if (blockData instanceof Ageable ageable
+                && ageable.getAge() != ageable.getMaximumAge()) {
+            return;
         }
 
-        jobsManager.processBlockBreak(player, block.getType());
+        jobsManager.processBlockBreak(player, block.getType(), placedByPlayer);
     }
 
     @EventHandler

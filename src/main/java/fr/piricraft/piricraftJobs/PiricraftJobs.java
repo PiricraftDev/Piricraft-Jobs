@@ -6,6 +6,7 @@ import fr.piricraft.piricraftJobs.listeners.JobsFarmListener;
 import fr.piricraft.piricraftJobs.managers.JobsDatabaseManager;
 import fr.piricraft.piricraftJobs.managers.JobsManager;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -29,8 +30,11 @@ public final class PiricraftJobs extends JavaPlugin {
 
         this.jobsManager = new JobsManager(this, databaseManager);
 
-        if (getCommand("jobs") != null) {
-            getCommand("jobs").setExecutor(new JobsCommand(jobsManager, databaseManager));
+        PluginCommand jobsCmd = getCommand("jobs");
+        if (jobsCmd != null) {
+            JobsCommand commandHandler = new JobsCommand(jobsManager, databaseManager);
+            jobsCmd.setExecutor(commandHandler);
+            jobsCmd.setTabCompleter(commandHandler);
         }
 
         getServer().getPluginManager().registerEvents(new JobsFarmListener(this, jobsManager), this);

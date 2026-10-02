@@ -11,6 +11,7 @@ public class JobProfile {
     private JobType activeJob;
     private final Map<JobType, Integer> levels = new EnumMap<>(JobType.class);
     private final Map<JobType, Double> experience = new EnumMap<>(JobType.class);
+    private boolean showBossBar;
 
     public JobProfile(UUID playerUuid) {
         this.playerUuid = playerUuid;
@@ -58,5 +59,13 @@ public class JobProfile {
         levels.put(job, currentLevel);
 
         return leveledUp;
+    }
+
+    public boolean isShowBossBar() {
+        return showBossBar;
+    }
+
+    public void setShowBossBar(boolean showBossBar) {
+        this.showBossBar = showBossBar;
     }
 }
